@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { CustomerCard } from './models/customer_card.model';
 import { CreateCustomerCardDto } from './dto/create-customer_card.dto';
 import { UpdateCustomerCardDto } from './dto/update-customer_card.dto';
 
 @Injectable()
 export class CustomerCardService {
-  create(createCustomerCardDto: CreateCustomerCardDto) {
-    return 'This action adds a new customerCard';
+  constructor(@InjectModel(CustomerCard) private readonly CustomerCardRepo: typeof CustomerCard) { }
+
+  async create(createCustomerCardDto: CreateCustomerCardDto) {
+    return await this.CustomerCardRepo.create(createCustomerCardDto);
   }
 
-  findAll() {
-    return `This action returns all customerCard`;
+  async findAll() {
+    return await this.CustomerCardRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} customerCard`;
+  async findOne(id: number) {
+    return this.CustomerCardRepo.findByPk(id);
   }
 
-  update(id: number, updateCustomerCardDto: UpdateCustomerCardDto) {
-    return `This action updates a #${id} customerCard`;
+  async update(id: number, updateCustomerCardDto: UpdateCustomerCardDto) {
+    return await this.CustomerCardRepo.update(updateCustomerCardDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} customerCard`;
+  async remove(id: number) {
+    return await this.CustomerCardRepo.destroy({ where: { id } });
   }
 }

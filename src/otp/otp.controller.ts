@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
 import { CreateOtpDto } from './dto/create-otp.dto';
 import { UpdateOtpDto } from './dto/update-otp.dto';
 
+@ApiTags('Otp')
 @Controller('otp')
 export class OtpController {
-  constructor(private readonly otpService: OtpService) {}
+  constructor(private readonly otpService: OtpService) { }
 
+  @ApiOperation({ summary: 'Create a otp' })
   @Post()
   create(@Body() createOtpDto: CreateOtpDto) {
     return this.otpService.create(createOtpDto);
   }
 
+  @ApiOperation({ summary: 'Get all otp' })
   @Get()
   findAll() {
     return this.otpService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get otp' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.otpService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOtpDto: UpdateOtpDto) {
-    return this.otpService.update(+id, updateOtpDto);
+  @ApiOperation({ summary: 'Update otp' })
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateOtpDto: UpdateOtpDto,
+  ) {
+    return await this.otpService.update(+id, updateOtpDto);
   }
 
+  @ApiOperation({ summary: 'Delete otp' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.otpService.remove(+id);
+  async delete(@Param('id') id: number): Promise<number> {
+    return await this.otpService.remove(id);
   }
 }

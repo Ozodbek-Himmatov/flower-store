@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Flowers } from './models/flower.model';
 import { CreateFlowerDto } from './dto/create-flower.dto';
 import { UpdateFlowerDto } from './dto/update-flower.dto';
 
 @Injectable()
 export class FlowersService {
-  create(createFlowerDto: CreateFlowerDto) {
-    return 'This action adds a new flower';
+  constructor(@InjectModel(Flowers) private readonly flowersRepo: typeof Flowers) { }
+
+  async create(createFlowerDto: CreateFlowerDto) {
+    return await this.flowersRepo.create(createFlowerDto);
   }
 
-  findAll() {
-    return `This action returns all flowers`;
+  async findAll() {
+    return await this.flowersRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} flower`;
+  async findOne(id: number) {
+    return this.flowersRepo.findByPk(id);
   }
 
-  update(id: number, updateFlowerDto: UpdateFlowerDto) {
-    return `This action updates a #${id} flower`;
+  async update(id: number, updateFlowerDto: UpdateFlowerDto) {
+    return await this.flowersRepo.update(updateFlowerDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} flower`;
+  async remove(id: number) {
+    return await this.flowersRepo.destroy({ where: { id } });
   }
 }

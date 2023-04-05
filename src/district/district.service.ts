@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { District } from './models/district.model';
 import { CreateDistrictDto } from './dto/create-district.dto';
 import { UpdateDistrictDto } from './dto/update-district.dto';
 
 @Injectable()
 export class DistrictService {
-  create(createDistrictDto: CreateDistrictDto) {
-    return 'This action adds a new district';
+  constructor(@InjectModel(District) private readonly districtRepo: typeof District) { }
+
+  async create(createDistrictDto: CreateDistrictDto) {
+    return await this.districtRepo.create(createDistrictDto);
   }
 
-  findAll() {
-    return `This action returns all district`;
+  async findAll() {
+    return await this.districtRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} district`;
+  async findOne(id: number) {
+    return this.districtRepo.findByPk(id);
   }
 
-  update(id: number, updateDistrictDto: UpdateDistrictDto) {
-    return `This action updates a #${id} district`;
+  async update(id: number, updateDistrictDto: UpdateDistrictDto) {
+    return await this.districtRepo.update(updateDistrictDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} district`;
+  async remove(id: number) {
+    return await this.districtRepo.destroy({ where: { id } });
   }
 }

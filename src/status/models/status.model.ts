@@ -21,7 +21,7 @@ export class Status extends Model<Status, StatusAttr> {
     name: string;
 
     @Column({ type: DataType.DATE })
-    updatedAt: string
+    updatedAt: Date
 
     @HasMany(() => Order)
     status_id: Order[];

@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { DeliveryAddressService } from './delivery_address.service';
 import { CreateDeliveryAddressDto } from './dto/create-delivery_address.dto';
 import { UpdateDeliveryAddressDto } from './dto/update-delivery_address.dto';
 
-@Controller('delivery-address')
-export class DeliveryAddressController {
-  constructor(private readonly deliveryAddressService: DeliveryAddressService) {}
+@ApiTags('DeliveryAddress')
+@Controller('deliveryAddress')
+export class deliveryAddressController {
+  constructor(private readonly deliveryAddressService: DeliveryAddressService) { }
 
+  @ApiOperation({ summary: 'Create a deliveryAddress' })
   @Post()
   create(@Body() createDeliveryAddressDto: CreateDeliveryAddressDto) {
     return this.deliveryAddressService.create(createDeliveryAddressDto);
   }
 
+  @ApiOperation({ summary: 'Get all deliveryAddress' })
   @Get()
   findAll() {
     return this.deliveryAddressService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get deliveryAddress' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.deliveryAddressService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDeliveryAddressDto: UpdateDeliveryAddressDto) {
-    return this.deliveryAddressService.update(+id, updateDeliveryAddressDto);
+  @ApiOperation({ summary: 'Update deliveryAddress' })
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateDeliveryAddressDto: UpdateDeliveryAddressDto,
+  ) {
+    return await this.deliveryAddressService.update(+id, updateDeliveryAddressDto);
   }
 
+  @ApiOperation({ summary: 'Delete deliveryAddress' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.deliveryAddressService.remove(+id);
+  async delete(@Param('id') id: number): Promise<number> {
+    return await this.deliveryAddressService.remove(id);
   }
 }

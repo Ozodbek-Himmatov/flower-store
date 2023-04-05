@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Order } from './models/order.model';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(@InjectModel(Order) private readonly orderRepo: typeof Order) { }
+
+  async create(createOrderDto: CreateOrderDto) {
+    return await this.orderRepo.create(createOrderDto);
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async findAll() {
+    return await this.orderRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: number) {
+    return this.orderRepo.findByPk(id);
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(id: number, updateOrderDto: UpdateOrderDto) {
+    return await this.orderRepo.update(updateOrderDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: number) {
+    return await this.orderRepo.destroy({ where: { id } });
   }
 }

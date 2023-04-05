@@ -1,1 +1,3 @@
-export class CreatePaymentMethodDto {}
+export class CreatePaymentMethodDto {
+    name: string
+}

@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { CreateColorDto } from './dto/create-color.dto';
+import { Colors } from './models/color.model';
 import { UpdateColorDto } from './dto/update-color.dto';
 
 @Injectable()
 export class ColorsService {
-  create(createColorDto: CreateColorDto) {
-    return 'This action adds a new color';
+  constructor(@InjectModel(Colors) private readonly colorRepo: typeof Colors) { }
+
+  async create(createColorDto: CreateColorDto) {
+    return await this.colorRepo.create(createColorDto);
   }
 
-  findAll() {
-    return `This action returns all colors`;
+  async findAll() {
+    return await this.colorRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} color`;
+  async findOne(id: number) {
+    return this.colorRepo.findByPk(id);
   }
 
-  update(id: number, updateColorDto: UpdateColorDto) {
-    return `This action updates a #${id} color`;
+  async update(id: number, updateColorDto: UpdateColorDto) {
+    return await this.colorRepo.update(updateColorDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} color`;
+  async remove(id: number) {
+    return await this.colorRepo.destroy({ where: { id } });
   }
 }

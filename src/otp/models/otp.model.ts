@@ -1,7 +1,7 @@
 import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Customer } from 'src/customer/models/customer.model';
 
 interface OtpAttr {
-    id: string;
     otp: string;
     expiration_time: Date;
     verified: boolean;
@@ -9,7 +9,7 @@ interface OtpAttr {
 
 @Table({ tableName: 'otp' })
 export class Otp extends Model<Otp, OtpAttr> {
-    @Column({ type: DataType.UUID, autoIncrement: false, primaryKey: true })
+    @Column({ type: DataType.INTEGER, autoIncrement: true, primaryKey: true })
     id: number;
 
     @Column({ type: DataType.STRING, allowNull: false })
@@ -20,4 +20,7 @@ export class Otp extends Model<Otp, OtpAttr> {
 
     @Column({ type: DataType.BOOLEAN, defaultValue: false })
     verified: boolean;
+
+    @HasMany(() => Customer)
+    customer: Customer[];
 }

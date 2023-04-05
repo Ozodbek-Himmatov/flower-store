@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateDeliveryAddressDto } from './create-delivery_address.dto';
-
-export class UpdateDeliveryAddressDto extends PartialType(CreateDeliveryAddressDto) {}
+export class UpdateDeliveryAddressDto {
+    name?: string
+    country_id?: number
+    region_id?: number
+    district_id?: number
+    street?: string
+    house?: string
+    flat?: number
+    more_into?: string
+}

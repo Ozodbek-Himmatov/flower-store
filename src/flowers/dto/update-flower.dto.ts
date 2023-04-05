@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateFlowerDto } from './create-flower.dto';
-
-export class UpdateFlowerDto extends PartialType(CreateFlowerDto) {}
+export class UpdateFlowerDto {
+    category_id?: number
+    name?: string
+    price?: number
+    description?: string
+    image_url?: string
+    color_id?: number
+}

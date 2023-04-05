@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Country } from './models/country.model';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
 
 @Injectable()
 export class CountryService {
-  create(createCountryDto: CreateCountryDto) {
-    return 'This action adds a new country';
+  constructor(@InjectModel(Country) private readonly countryRepo: typeof Country) { }
+
+  async create(createCountryDto: CreateCountryDto) {
+    return await this.countryRepo.create(createCountryDto);
   }
 
-  findAll() {
-    return `This action returns all country`;
+  async findAll() {
+    return await this.countryRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} country`;
+  async findOne(id: number) {
+    return this.countryRepo.findByPk(id);
   }
 
-  update(id: number, updateCountryDto: UpdateCountryDto) {
-    return `This action updates a #${id} country`;
+  async update(id: number, updateCountryDto: UpdateCountryDto) {
+    return await this.countryRepo.update(updateCountryDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} country`;
+  async remove(id: number) {
+    return await this.countryRepo.destroy({ where: { id } });
   }
 }

@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CustomerCardService } from './customer_card.service';
 import { CreateCustomerCardDto } from './dto/create-customer_card.dto';
 import { UpdateCustomerCardDto } from './dto/update-customer_card.dto';
 
-@Controller('customer-card')
+@ApiTags('CustomerCard')
+@Controller('customerCard')
 export class CustomerCardController {
-  constructor(private readonly customerCardService: CustomerCardService) {}
+  constructor(private readonly CustomerCardService: CustomerCardService) { }
 
+  @ApiOperation({ summary: 'Create a customerCard' })
   @Post()
   create(@Body() createCustomerCardDto: CreateCustomerCardDto) {
-    return this.customerCardService.create(createCustomerCardDto);
+    return this.CustomerCardService.create(createCustomerCardDto);
   }
 
+  @ApiOperation({ summary: 'Get all customerCard' })
   @Get()
   findAll() {
-    return this.customerCardService.findAll();
+    return this.CustomerCardService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get customerCard' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.customerCardService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.CustomerCardService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCustomerCardDto: UpdateCustomerCardDto) {
-    return this.customerCardService.update(+id, updateCustomerCardDto);
+  @ApiOperation({ summary: 'Update customerCard' })
+  @Put(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateCustomerCardDto: UpdateCustomerCardDto,
+  ) {
+    return await this.CustomerCardService.update(+id, updateCustomerCardDto);
   }
 
+  @ApiOperation({ summary: 'Delete customerCard' })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.customerCardService.remove(+id);
+  async delete(@Param('id') id: number): Promise<number> {
+    return await this.CustomerCardService.remove(id);
   }
 }

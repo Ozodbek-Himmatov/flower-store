@@ -33,19 +33,19 @@ export class DeliveryAddress extends Model<DeliveryAddress, DeliveryAddressAttr>
     name: string
 
     @ForeignKey(() => Country)
-    @Column({ type: DataType.NUMBER })
+    @Column({ type: DataType.INTEGER })
     country_id: number
     @BelongsTo(() => Country)
     country: Country[];
 
     @ForeignKey(() => Region)
-    @Column({ type: DataType.NUMBER })
+    @Column({ type: DataType.INTEGER })
     region_id: number
     @BelongsTo(() => Region)
     region: Region[];
 
     @ForeignKey(() => District)
-    @Column({ type: DataType.NUMBER })
+    @Column({ type: DataType.INTEGER })
     district_id: number
     @BelongsTo(() => District)
     district: District[];

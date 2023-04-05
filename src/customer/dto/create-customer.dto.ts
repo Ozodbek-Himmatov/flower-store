@@ -1,1 +1,4 @@
-export class CreateCustomerDto {}
+export class CreateCustomerDto {
+    otp_id: number
+    phone: string
+}

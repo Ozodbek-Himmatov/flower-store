@@ -10,7 +10,6 @@ import {
 import { Category } from 'src/category/models/category.model';
 import { Colors } from 'src/colors/models/color.model';
 import { Order } from 'src/order/models/order.model';
-import { Otp } from 'src/otp/models/otp.entity';
 
 interface FlowersAttr {
     category_id: number
@@ -37,12 +36,6 @@ export class Flowers extends Model<Flowers, FlowersAttr> {
 
     @Column({ type: DataType.STRING })
     hashed_password: string;
-
-    @ForeignKey(() => Otp)
-    @Column({ type: DataType.INTEGER })
-    otp_id: number;
-    @BelongsTo(() => Otp)
-    otp: Otp[];
 
     @Column({ type: DataType.STRING })
     hashed_refresh_token: string;

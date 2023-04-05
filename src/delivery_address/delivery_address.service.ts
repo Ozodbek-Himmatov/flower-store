@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { DeliveryAddress } from './models/delivery_address.model';
 import { CreateDeliveryAddressDto } from './dto/create-delivery_address.dto';
 import { UpdateDeliveryAddressDto } from './dto/update-delivery_address.dto';
 
 @Injectable()
 export class DeliveryAddressService {
-  create(createDeliveryAddressDto: CreateDeliveryAddressDto) {
-    return 'This action adds a new deliveryAddress';
+  constructor(@InjectModel(DeliveryAddress) private readonly deliveryAddressRepo: typeof DeliveryAddress) { }
+
+  async create(createDeliveryAddressDto: CreateDeliveryAddressDto) {
+    return await this.deliveryAddressRepo.create(createDeliveryAddressDto);
   }
 
-  findAll() {
-    return `This action returns all deliveryAddress`;
+  async findAll() {
+    return await this.deliveryAddressRepo.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} deliveryAddress`;
+  async findOne(id: number) {
+    return this.deliveryAddressRepo.findByPk(id);
   }
 
-  update(id: number, updateDeliveryAddressDto: UpdateDeliveryAddressDto) {
-    return `This action updates a #${id} deliveryAddress`;
+  async update(id: number, updateDeliveryAddressDto: UpdateDeliveryAddressDto) {
+    return await this.deliveryAddressRepo.update(updateDeliveryAddressDto, {
+      where: { id },
+      returning: true
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} deliveryAddress`;
+  async remove(id: number) {
+    return await this.deliveryAddressRepo.destroy({ where: { id } });
   }
 }
