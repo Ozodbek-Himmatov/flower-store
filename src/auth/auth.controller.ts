@@ -1,34 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Res, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { LoginDto } from './dto/login-user.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Response } from 'express';
+import { CreateCustomerDto } from "../customer/dto/create-customer.dto";
+import { CookieGetter } from 'src/decorators/cookieGetter.decorator';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @ApiOperation({ summary: 'Login User' })
+  @HttpCode(200)
+  @Post('login')
+  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    return this.authService.login(loginDto, res);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @ApiOperation({ summary: 'Register User' })
+  @Post('register')
+  registration(
+    @Body() createUserDto: CreateCustomerDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.registration(createUserDto, res);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @ApiOperation({ summary: 'Logout User' })
+  @HttpCode(200)
+  @Post('logout')
+  logout(
+    @CookieGetter('refresh_token') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.logout(refreshToken, res);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Post(':id/refresh')
+  refresh(
+    @Param('id') id: number,
+    @CookieGetter('refresh_token') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.refreshToken(+id, refreshToken, res);
   }
 }

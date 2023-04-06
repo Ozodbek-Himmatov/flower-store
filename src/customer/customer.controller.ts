@@ -19,8 +19,8 @@ export class CustomerController {
 
   @ApiOperation({ summary: 'Create a customer' })
   @Post()
-  create(@Body() createCustomerDto: CreateCustomerDto) {
-    return this.customerService.create(createCustomerDto);
+  create(@Body() createCustomerDto: CreateCustomerDto, hashed_password: string) {
+    return this.customerService.create(createCustomerDto, hashed_password);
   }
 
   @ApiOperation({ summary: 'Get all customer' })

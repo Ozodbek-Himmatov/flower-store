@@ -8,8 +8,8 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 export class CustomerService {
   constructor(@InjectModel(Customer) private readonly customerRepo: typeof Customer) { }
 
-  async create(createCustomerDto: CreateCustomerDto) {
-    return await this.customerRepo.create(createCustomerDto);
+  async create(createCustomerDto: CreateCustomerDto, hashed_password: string) {
+    return await this.customerRepo.create({ ...createCustomerDto, hashed_password });
   }
 
   async findAll() {
@@ -18,6 +18,10 @@ export class CustomerService {
 
   async findOne(id: number) {
     return this.customerRepo.findByPk(id);
+  }
+
+  async findOneByPhone(phone: string) {
+    return await this.customerRepo.findOne({ where: { phone } });
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto) {

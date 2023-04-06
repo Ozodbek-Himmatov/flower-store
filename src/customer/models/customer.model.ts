@@ -36,13 +36,16 @@ export class Customer extends Model<Customer, CustomerAttr> {
     email: string;
 
     @Column({ type: DataType.STRING })
-    hashed_password: string;
+    password: string;
 
     @ForeignKey(() => Otp)
     @Column({ type: DataType.INTEGER })
     otp_id: number;
     @BelongsTo(() => Otp)
     otp: Otp[];
+
+    @Column({ type: DataType.STRING })
+    hashed_password: string;
 
     @Column({ type: DataType.STRING })
     hashed_refresh_token: string;
