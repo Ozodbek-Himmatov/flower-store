@@ -10,7 +10,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login-user.dto';
 import { Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import { CustomerService } from '../customer/customer.service';
 import { Customer } from '../customer/models/customer.model';
 

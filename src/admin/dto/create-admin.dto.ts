@@ -1,5 +1,8 @@
 export class CreateAdminDto {
-    name: string
-    login: string
-    password: string
+    username: string;
+    phone: string;
+    password: string;
+    email: string;
+    is_active: boolean;
+    refresh_token: string;
 }

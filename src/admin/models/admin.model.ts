@@ -7,9 +7,9 @@ import {
 
 interface AdminAttr {
     name: string
-    login: string
-    hashed_password: string
-    hashed_refresh_token: string
+    email: string
+    password: string
+    refresh_token: string
     is_active: boolean
     is_owner: boolean
 }
@@ -23,13 +23,13 @@ export class Admin extends Model<Admin, AdminAttr> {
     name: string;
 
     @Column({ type: DataType.STRING })
-    login: string;
+    email: string;
 
     @Column({ type: DataType.STRING })
-    hashed_password: string;
+    password: string;
 
     @Column({ type: DataType.STRING })
-    hashed_refresh_token: string;
+    refresh_token: string;
 
     @Column({ type: DataType.BOOLEAN })
     is_active: boolean;
