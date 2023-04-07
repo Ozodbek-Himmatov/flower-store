@@ -1,18 +1,11 @@
-import {
-    CanActivate,
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Observable } from 'rxjs';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { Observable } from "rxjs";
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class OnlyOwnerGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) { }
-    canActivate(
-        context: ExecutionContext,
-    ): boolean | Promise<boolean> | Observable<boolean> {
+    canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
         const authHeader = req.headers.authorization;
         if (!authHeader)
@@ -37,7 +30,16 @@ export class JwtAuthGuard implements CanActivate {
             });
         }
 
-        req.user = user;
-        return true;
+
+        console.log(req.user);
+
+
+        if (!user.is_owner) {
+            throw new UnauthorizedException({
+                message: "You are NOT Authorized"
+            })
+        }
+
+        return true
     }
 }
