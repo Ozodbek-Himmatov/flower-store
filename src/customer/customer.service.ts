@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Customer } from './models/customer.model';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -9,15 +9,19 @@ import { AddMinutesToDate } from 'src/helpers/addMinutesToDate';
 import { Otp } from 'src/otp/models/otp.model';
 import { dates, decode, encode } from 'src/helpers/crypto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectModel(Customer) private readonly customerRepo: typeof Customer,
     @InjectModel(Otp) private readonly otpRepo: typeof Otp,
+    private readonly jwtService: JwtService,
   ) { }
 
+  //  Simple CRUD
   async create(createCustomerDto: CreateCustomerDto, hashed_password: string) {
     return await this.customerRepo.create({ ...createCustomerDto, hashed_password });
   }
@@ -45,6 +49,92 @@ export class CustomerService {
     return await this.customerRepo.destroy({ where: { id } });
   }
 
+  //  Register Customer
+  async registration(createCustomerDto: CreateCustomerDto, res: Response) {
+    const user = await this.customerRepo.findOne({
+      where: { phone: createCustomerDto.phone }
+    })
+    if (user) {
+      throw new BadRequestException("The number ALREADY Taken")
+    }
+
+    const hashed_password = await bcrypt.hash(createCustomerDto.password, 7)
+
+    const newUser = await this.customerRepo.create({
+      ...createCustomerDto,
+      hashed_password
+    })
+
+    const tokens = await this.getToken(newUser)
+
+    const hashed_refresh_token = await bcrypt.hash(tokens.refresh_token, 7)
+
+    const updatedUser = await this.customerRepo.update({
+      hashed_refresh_token
+    },
+      {
+        where: {
+          id: newUser.dataValues.id
+        },
+        returning: true
+      })
+
+    res.cookie("refresh_token", tokens.refresh_token, {
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+      httpOnly: true
+    })
+
+
+    const response = {
+      message: "OTP number was SENT to your phone",
+      user: updatedUser.entries,
+      tokens
+    }
+
+    return response
+  }
+
+  private async getToken(user: Customer) {
+    const payload = {
+      id: user.id,
+      is_active: user.is_active,
+      is_user: true
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: process.env.ACCESS_TOKEN_KEY,
+        expiresIn: process.env.ACCESS_TOKEN_TIME,
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: process.env.REFRESH_TOKEN_KEY,
+        expiresIn: process.env.REFRESH_TOKEN_TIME,
+      }),
+    ]);
+    return { access_token: accessToken, refresh_token: refreshToken };
+  }
+
+  //  Logout
+  async logout(refreshToken: string, res: Response) {
+    const userData = await this.jwtService.verify(refreshToken, {
+      secret: process.env.PRIVATE_KEY
+    })
+
+    if (!userData) {
+      throw new ForbiddenException("User NOT Found")
+    }
+    const updatedUser = await this.customerRepo.update({ hashed_refresh_token: null }, { where: { id: userData.id }, returning: true })
+
+    res.clearCookie("refresh_token")
+
+    const response = {
+      message: "Logged OUT successfully",
+      user: updatedUser[1][0]
+    }
+
+  }
+
+  //  OTP generate
   async newOTP(phoneUserDto: PhoneUserDto) {
     try {
       const phone = phoneUserDto.phone;
@@ -78,7 +168,8 @@ export class CustomerService {
     }
   }
 
-  async verifyOtp(verifyOtpDto: VerifyOtpDto) {
+  //  verify Otp
+  async verifyOtp(verifyOtpDto: VerifyOtpDto, res: Response) {
     const { verification_key, otp, phone } = verifyOtpDto;
     const current_date = new Date();
     const decoded = await decode(verification_key);
@@ -94,8 +185,14 @@ export class CustomerService {
             const user = await this.customerRepo.findOne({
               where: { phone: phone }
             });
-            console.log(user);
+
             if (user) {
+              const tokens = await this.getToken(user)
+              res.cookie("refresh_token", tokens.refresh_token, {
+                maxAge: 15 * 24 * 60 * 60 * 1000,
+                httpOnly: true
+              })
+
               const updatedUser = await this.customerRepo.update({},
                 { where: { id: user.id }, returning: true },
               );
@@ -103,7 +200,7 @@ export class CustomerService {
                 { verified: true },
                 { where: { id: obj.otp_id }, returning: true },
               );
-              console.log(updatedUser);
+
               const response = {
                 user: updatedUser,
               };

@@ -23,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
         const token = authHeader.split(' ')[1];
         if (bearer !== 'Bearer' || !token) {
             throw new UnauthorizedException({
-                message: "The User is NOT Authorized  (empty bearer or token)",
+                message: "The User is NOT Authorized  (empty bearer/token)",
             });
         }
         let user: any;
@@ -37,7 +37,6 @@ export class JwtAuthGuard implements CanActivate {
             });
         }
 
-        req.user = user;
         return true;
     }
 }

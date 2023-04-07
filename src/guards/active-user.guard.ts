@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Observable } from "rxjs";
 
 @Injectable()
-export class OnlyOwnerGuard implements CanActivate {
+export class ActiveUserGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) { }
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
@@ -30,13 +30,9 @@ export class OnlyOwnerGuard implements CanActivate {
             });
         }
 
-
-        console.log(req.user);
-
-
-        if (!user.is_owner) {
+        if (!user.is_active) {
             throw new UnauthorizedException({
-                message: "You are NOT Authorized"
+                message: "Admin is NOT Active"
             })
         }
 

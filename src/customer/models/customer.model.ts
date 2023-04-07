@@ -18,7 +18,7 @@ interface CustomerAttr {
     otp_id: number
     hashed_password: string
     hashed_refresh_token: string
-
+    is_active: boolean
 }
 
 @Table({ tableName: 'customer' })
@@ -46,6 +46,9 @@ export class Customer extends Model<Customer, CustomerAttr> {
 
     @Column({ type: DataType.STRING })
     hashed_password: string;
+
+    @Column({ type: DataType.STRING })
+    is_active: boolean;
 
     @Column({ type: DataType.STRING })
     hashed_refresh_token: string;

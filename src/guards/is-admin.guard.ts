@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Observable } from "rxjs";
 
 @Injectable()
-export class ActiveAdminGuard implements CanActivate {
+export class IsAdminGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) { }
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
@@ -16,7 +16,7 @@ export class ActiveAdminGuard implements CanActivate {
         const token = authHeader.split(' ')[1];
         if (bearer !== 'Bearer' || !token) {
             throw new UnauthorizedException({
-                message: "The User is NOT Authorized  (empty bearer or token)",
+                message: "The User is NOT Authorized  (empty bearer/token)",
             });
         }
         let user: any;
@@ -30,16 +30,11 @@ export class ActiveAdminGuard implements CanActivate {
             });
         }
 
-
-        console.log(req, "salom");
-
-
         if (!user.is_active) {
             throw new UnauthorizedException({
-                message: "Admin is NOT Active"
+                message: "User wasn't Deactivated!!!"
             })
         }
-
         return true
     }
 }

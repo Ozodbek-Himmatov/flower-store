@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { InjectModel } from '@nestjs/sequelize';
@@ -6,7 +6,6 @@ import { Admin } from './models/admin.model';
 import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import { LoginAdminDto } from './dto/login-admin.dto';
-import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -16,29 +15,7 @@ export class AdminService {
     private readonly jwtService: JwtService,
   ) { }
 
-
-  async findAll() {
-    return await this.adminRepo.findAll({ include: { all: true } });
-  }
-
-  async findOne(id: number) {
-    return await this.adminRepo.findByPk(id);
-  }
-
-  async getUserByEmail(email: string) {
-    return await this.adminRepo.findOne({ where: { email } })
-  }
-
-  async update(id: number, updateAdminDto: UpdateAdminDto) {
-    return await this.adminRepo.update(updateAdminDto, {
-      where: { id },
-      returning: true
-    });
-  }
-
-  async remove(id: number) {
-    return await this.adminRepo.destroy({ where: { id } });
-  }
+  //  Create / Register Admin 
   async create(createAdminDto: CreateAdminDto) {
     let candid = await this.getUserByEmail(createAdminDto.email)
     if (candid) {
@@ -54,6 +31,7 @@ export class AdminService {
       { where: { id: (await admin).dataValues.id }, returning: true })
   }
 
+  //  Login
   async login(loginAdminDto: LoginAdminDto, res: Response) {
 
     let candid = await this.adminRepo.findOne({ where: { name: loginAdminDto.name } })
@@ -87,8 +65,15 @@ export class AdminService {
     }
   }
 
-  private async getToken(user: Admin) {
-    const payload = { id: user.id };
+  //  Getting Admin Token
+  private async getToken(admin: Admin) {
+    const payload = {
+      id: admin.id,
+      is_active: admin.is_active,
+      is_owner: admin.is_owner,
+      is_admin: true
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: process.env.ACCESS_TOKEN_KEY,
@@ -100,5 +85,78 @@ export class AdminService {
       }),
     ]);
     return { access_token: accessToken, refresh_token: refreshToken };
+  }
+
+  //  Simple CRUD
+  async findAll() {
+    return await this.adminRepo.findAll({ include: { all: true } });
+  }
+
+  async findOne(id: number) {
+    return await this.adminRepo.findByPk(id);
+  }
+
+  async getUserByEmail(email: string) {
+    return await this.adminRepo.findOne({ where: { email } })
+  }
+
+  async update(id: number, updateAdminDto: UpdateAdminDto) {
+    return await this.adminRepo.update(updateAdminDto, {
+      where: { id },
+      returning: true
+    });
+  }
+
+  async remove(id: number) {
+    return await this.adminRepo.destroy({ where: { id } });
+  }
+
+  //  Admin (de)activate and Owner (un)make
+  async activate(id: number) {
+    let admin = await this.adminRepo.findByPk(id, { include: { all: true } })
+
+    if (!admin) {
+      throw new HttpException("We do NOT have such Admin", HttpStatus.NOT_FOUND)
+    }
+    return this.adminRepo.update(
+      { is_active: true },
+      { where: { id: admin.dataValues.id }, returning: true }
+    );
+  }
+
+  async deactivate(id: number) {
+    let admin = await this.adminRepo.findByPk(id, { include: { all: true } })
+
+    if (!admin) {
+      throw new HttpException("We do NOT have such Admin", HttpStatus.NOT_FOUND)
+    }
+    return this.adminRepo.update(
+      { is_active: false },
+      { where: { id: admin.dataValues.id }, returning: true }
+    );
+  }
+
+  async makeOwner(id: number) {
+    let admin = await this.adminRepo.findByPk(id, { include: { all: true } })
+
+    if (!admin) {
+      throw new HttpException("We do NOT have such Admin", HttpStatus.NOT_FOUND)
+    }
+    return this.adminRepo.update(
+      { is_owner: true },
+      { where: { id: admin.dataValues.id }, returning: true }
+    );
+  }
+
+  async unmakeOwner(id: number) {
+    let admin = await this.adminRepo.findByPk(id, { include: { all: true } });
+
+    if (!admin) {
+      throw new HttpException("We do NOT have such Admin", HttpStatus.NOT_FOUND)
+    }
+    return this.adminRepo.update(
+      { is_owner: false },
+      { where: { id: admin.dataValues.id }, returning: true }
+    );
   }
 }

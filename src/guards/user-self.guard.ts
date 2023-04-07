@@ -1,10 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Observable } from "rxjs";
-import { Admin } from "../admin/models/admin.model";
 
 @Injectable()
-export class AdminSelfGuard implements CanActivate {
+export class UserSelfGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) { }
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
@@ -17,7 +16,7 @@ export class AdminSelfGuard implements CanActivate {
         const token = authHeader.split(' ')[1];
         if (bearer !== 'Bearer' || !token) {
             throw new UnauthorizedException({
-                message: "The User is NOT Authorized  (empty bearer or token)",
+                message: "The User is NOT Authorized  (empty bearer/token)",
             });
         }
         let user: any;
@@ -44,6 +43,6 @@ export class AdminSelfGuard implements CanActivate {
             }
         }
 
-        return true
+        return true;
     }
 }
