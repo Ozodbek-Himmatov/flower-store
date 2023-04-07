@@ -1,15 +1,18 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { AllExceptionsFilter } from './Error/ExceptionHandler';
 
 async function start() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
   const PORT = process.env.PORT || 3000
-  app.useGlobalPipes(new ValidationPipe())
+  const httpAdapter = app.get(HttpAdapterHost);
 
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   const config = new DocumentBuilder()
     .setTitle('Flower Store')

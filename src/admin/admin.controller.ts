@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Put,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -17,7 +18,7 @@ import { AdminService } from './admin.service';
 export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
-  @ApiOperation({ summary: 'Create a admin' })
+  @ApiOperation({ summary: 'Create an admin' })
   @Post()
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
@@ -45,8 +46,11 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Delete admin' })
+  @HttpCode(200)
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<number> {
     return await this.adminService.remove(id);
   }
+
+
 }
